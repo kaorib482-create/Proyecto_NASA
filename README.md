@@ -5,7 +5,6 @@ Proyecto desarrollado para el evento de la NASA del **14 y 15 de noviembre**, de
 ## Propósito
 
 AgroPlant ayuda a pequeños productores a adaptar sus cultivos al cambio climático. Con datos de la NASA, avisa con tiempo cuándo el clima pone en riesgo un cultivo (sequía, lluvias fuertes o calor) y propone una alternativa para cada problema encontrado.
-
 ## Tipo de aplicación
 
 Sitio web responsivo (funciona en computadora y celular) con:
