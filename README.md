@@ -34,6 +34,8 @@ Sitio web responsivo (funciona en computadora y celular) con:
 | Servidor local | XAMPP |
 | Datos climáticos | NASA POWER API |
 | Control de versiones | Git y GitHub |
+| Presentacion | Canva.com |
+| Documenatación |Microsoft Office |
 
 ## Instalación y ejecución
 
