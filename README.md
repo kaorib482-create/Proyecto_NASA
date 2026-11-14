@@ -48,8 +48,6 @@ Sitio web responsivo (funciona en computadora y celular) con:
 5. Abre en el navegador: `http://localhost/agroplant`
 
 ## Estructura del proyecto
-
-
 #
 ## Responsables
 
