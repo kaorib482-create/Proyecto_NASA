@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+ <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="theme-color" content="#7c9164">
+ <meta name="description" content="AgroPlant: elige tu terreno, consulta el clima y compara qué sembrar con información NASA.">
+ <title>AgroPlant | Siembra en el momento justo</title>
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+ <link rel="stylesheet" href="css/estilos.css?v=20261115c">
+ <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+ <script defer src="js/catalogo.js"></script>
+ <script defer src="js/mapa_respaldo.js"></script>
+ <script defer src="js/mexico_contorno.js"></script>
+ <script defer src="js/selectores.js"></script>
+ <script defer src="js/app.js?v=20261115c"></script>
+</head>
+<body>
+ <div class="toast" id="toast" role="status" aria-live="polite"></div>
+ <header class="hero">
+  <div class="hero-inner">
+   <div class="brand"><span class="logo" aria-hidden="true">🌱</span><div><h1>AgroPlant</h1><p>Siembra en el momento justo</p></div></div>
+   <div class="hero-right"><span class="tagline">Del campo, para el campo</span><span class="today" id="todayLabel"></span></div>
+  </div>
+  <div class="hero-fields" aria-hidden="true"></div>
+ </header>
+ <div class="launch-notice" id="launchNotice" hidden>Para ver el clima, los municipios y los cultivos de tu base de datos, abre AgroPlant desde <a href="http://localhost/agroplant/index.html">localhost/agroplant</a> con Apache encendido.</div>
+ <main class="page">
+  <aside class="panel setup">
+   <h2>🌿 Tu próxima siembra</h2>
+   <label for="cropSearch">Cultivo o semilla</label>
+   <div class="search-field"><span>🔎</span><input id="cropSearch" type="search" value="Maíz" autocomplete="off" aria-autocomplete="list" aria-controls="cropResults" placeholder="Escribe el nombre del cultivo"><button type="button" id="clearCrop" title="Cambiar cultivo">⌄</button></div>
+   <div class="crop-results hidden" id="cropResults" role="listbox"></div>
+   <button type="button" id="missingCrop" class="text-button">¿No encuentras tu cultivo?</button>
+   <label for="plantDate">¿Cuándo piensas sembrar?</label><input type="date" id="plantDate">
+   <label for="stateSelect">¿En qué estado?</label><select id="stateSelect" aria-label="Elige un estado"></select>
+   <label for="municipalitySelect">¿En qué municipio?</label><select id="municipalitySelect"><option value="">Elige primero un estado</option></select>
+   <p class="hint" id="locationHint">También puedes tocar tu terreno en el mapa.</p>
+   <div class="form-divider"></div>
+   <h3>Cuéntanos de tu tierra</h3>
+   <label for="previousCrop">¿Qué sembraste antes?</label><select id="previousCrop"><option value="ninguno">No sé / primera siembra</option></select>
+   <div class="two-fields"><div><label for="soilSelect">Tipo de tierra</label><select id="soilSelect"><option value="desconocido">No sé</option><option value="franco">Suelta y equilibrada</option><option value="arenoso">Arenosa</option><option value="arcilloso">Arcillosa</option></select></div><div><label for="waterSelect">Agua disponible</label><select id="waterSelect"><option value="temporal">Solo lluvia</option><option value="limitado">Riego limitado</option><option value="riego">Tengo riego</option></select></div></div>
+   <label>¿Qué es lo más importante para ti?</label>
+   <div class="priorities" id="priorities"><button type="button" class="selected" data-priority="agua">💧 Ahorrar agua</button><button type="button" data-priority="suelo">🌿 Mejorar tierra</button><button type="button" data-priority="riesgo">🛡️ Menos riesgo</button></div>
+   <button type="button" class="btn-primary full" id="analyzeBtn">Revisar mi siembra</button>
+   <p class="status-label" id="dbStatus">Cargando cultivos…</p>
+  </aside>
+  <section class="content">
+   <div class="top-layout">
+    <section class="panel map-panel">
+     <div class="section-heading"><div><h2>🗺️ Elige tu terreno</h2><p>Acerca el mapa para encontrar tu municipio</p></div><div class="map-tools"><button id="zoomIn" title="Acercar">+</button><button id="zoomOut" title="Alejar">−</button><button id="resetMap" title="Ver todo México">⌂</button></div></div>
+     <div class="map-switch" id="mapSwitch" aria-label="Tipos de mapa"><button data-layer="temp" class="selected">🌡️ Temperatura</button><button data-layer="rain">🌧️ Lluvia</button><button data-layer="humidity">💦 Humedad</button><button data-layer="radar">🌦️ Radar</button><button data-layer="nasa">🛰️ NASA</button></div>
+     <div class="map-area" id="mexicoMap"><div class="map-loading" id="mapLoading">Preparando mapa…</div><div class="map-floating-info" id="mapFloatingInfo" hidden></div></div>
+     <div class="map-bottom"><div class="scale" id="mapLegend"><span>Frío</span><i></i><span>Calor</span></div><span class="map-precision" id="mapPrecision">Elige un estado del mapa</span></div>
+     <div class="map-note" id="mapNote">El mapa muestra condiciones en puntos de referencia; cada parcela puede tener un clima distinto.</div>
+    </section>
+    <section class="panel live-panel">
+     <div class="section-heading"><div><h2>☀️ El clima de hoy</h2><p id="weatherLocation">Morelos, México</p></div><span class="fresh-dot" id="freshBadge">Actualizando</span></div>
+     <div class="weather-hero"><span class="sky-icon" id="weatherIcon">☀️</span><div><strong class="main-temp" id="nowTemp">—°</strong><p id="weatherSummary">Consultando condiciones…</p></div></div>
+     <div class="weather-details"><div><span>💧 Lluvia ahora</span><strong id="nowRain">— mm</strong></div><div><span>☁️ Humedad del aire</span><strong id="nowHumidity">— %</strong></div><div><span>🍃 Viento</span><strong id="nowWind">— km/h</strong></div></div>
+     <p id="weatherUpdated" class="muted small">Datos meteorológicos actualizados al consultar.</p>
+     <div class="crop-photo-card"><div id="cropPhoto" class="photo-placeholder">🌽</div><div class="crop-summary"><small>Tu cultivo</small><h3 id="cropTitle">Maíz</h3><p id="cropDescription">Una opción para evaluar según tu terreno.</p><a href="#" target="_blank" rel="noopener noreferrer" id="googlePhotos">Ver fotografías reales ↗</a></div></div>
+    </section>
+   </div>
+   <section class="panel forecast-panel"><div class="section-heading"><div><h2>📅 Los próximos 5 días</h2><p>Pronóstico para los próximos cinco días</p></div><small id="forecastUpdated" class="muted">—</small></div><div id="forecastDays" class="forecast-days"><div class="empty">Consultando pronóstico…</div></div></section>
+   <section class="panel result-panel" id="resultPanel"><div class="result-summary"><div class="donut" id="donut"><strong id="scoreValue">—</strong><span>Compatibilidad</span></div><div class="result-copy"><p class="eyebrow">Tu siembra</p><h2 id="resultTitle">¿Es buen momento para sembrar?</h2><p id="resultDescription">Elige tu cultivo y terreno, luego pulsa «Revisar mi siembra».</p><span id="resultWarning" class="fineprint"></span></div></div><div id="resultReasons" class="reasons hidden"></div></section>
+   <section class="panel recommendations"><div class="section-heading"><div><h2>🥕 También podrías sembrar</h2><p>Compara alternativas para tu zona</p></div></div><div id="alternativeCards" class="alternatives-grid"><div class="empty">Aquí encontrarás otras opciones y el motivo de cada recomendación.</div></div></section>
+   <section class="panel rotations"><div class="section-heading"><div><h2>🌿 Cuida tu tierra</h2><p>Alterna cultivos para que el suelo se mantenga saludable</p></div></div><div class="rotation-grid" id="rotationCards"><div class="empty">Revisa tu siembra para comparar las rotaciones.</div></div></section>
+   <details class="sources panel"><summary>Fuentes y recomendaciones de uso <span>⌄</span></summary><p>El clima de hoy y el pronóstico usan <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>. El análisis de fechas usa datos climáticos históricos de <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER</a>. La capa satelital de lluvia usa <a href="https://gpm.nasa.gov/data" target="_blank" rel="noopener">NASA GPM</a> a través de GIBS cuando está disponible. Los límites estatales y municipales se solicitan al <a href="https://www.inegi.org.mx/servicios/catalogounico.html" target="_blank" rel="noopener">INEGI</a>. Son fuentes distintas y sus fechas de actualización también lo son.</p><p>La compatibilidad es una orientación, <strong>no una probabilidad garantizada de cosecha</strong>. Consulta con un especialista de tu región para decisiones de inversión, semillas, riego y plagas.</p><p class="attributions">Datos vectoriales © <a href="https://www.inegi.org.mx/servicios/catalogounico.html" target="_blank" rel="noopener">INEGI</a> · Mapas de lluvia © <a href="https://www.rainviewer.com/" target="_blank" rel="noopener">RainViewer</a> · Imágenes satelitales NASA GIBS · Fotos: Wikipedia/Wikimedia según autor y licencia de cada imagen.</p></details>
+  </section>
+ </main>
+ <footer><strong>🌱 AgroPlant</strong><span>Hecho para quienes trabajan la tierra.</span></footer>
+ <dialog id="addCropDialog"><form method="dialog" id="addCropForm"><button class="dialog-close" type="button" id="closeDialog">✕</button><h2>Agregar un cultivo</h2><p>Si no aparece en la lista, podemos registrarlo. La recomendación se mostrará cuando tenga datos agrícolas suficientes.</p><label for="newCropName">Nombre del cultivo</label><input id="newCropName" maxlength="110" placeholder="Ej. Chía" required><button type="submit" class="btn-primary">Guardar cultivo</button></form></dialog>
+</body>
+</html>
